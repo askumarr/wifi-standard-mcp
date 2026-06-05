@@ -313,8 +313,26 @@ def _get_section(conn: sqlite3.Connection, section_number: str, version: str | N
     return [TextContent(type="text", text=json.dumps(result, indent=2))]
 
 
+def _sanitize_fts_query(query: str) -> str:
+    """Sanitize query for FTS5: quote terms containing hyphens/special chars."""
+    import re
+    # If already quoted, leave as-is
+    if query.startswith('"') and query.endswith('"'):
+        return query
+    # Quote individual tokens that contain hyphens (e.g., multi-link -> "multi-link")
+    tokens = query.split()
+    sanitized = []
+    for token in tokens:
+        if '-' in token and not token.startswith('"'):
+            sanitized.append(f'"{token}"')
+        else:
+            sanitized.append(token)
+    return ' '.join(sanitized)
+
+
 def _search_standard(conn: sqlite3.Connection, query: str, max_results: int, version: str | None = None) -> list[TextContent]:
     results = []
+    query = _sanitize_fts_query(query)
 
     # Search sections
     if version:

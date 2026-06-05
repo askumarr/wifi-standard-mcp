@@ -42,7 +42,10 @@ def extract_figures(
     start_page = page_range[0] if page_range else 0
     end_page = page_range[1] if page_range else doc.page_count - 1
 
-    for page_idx in range(start_page, min(end_page + 1, doc.page_count)):
+    total_pages = min(end_page + 1, doc.page_count) - start_page
+    for i, page_idx in enumerate(range(start_page, min(end_page + 1, doc.page_count))):
+        if i % 100 == 0:
+            print(f"  [figures] Processing page {page_idx} ({i}/{total_pages})...")
         page = doc[page_idx]
 
         # Extract raster images
@@ -287,7 +290,7 @@ def _assign_captions(doc: pymupdf.Document, figures: list[ExtractedFigure]) -> N
         by_page.setdefault(fig.page_number, []).append(fig)
 
     caption_pattern = re.compile(
-        r'Figure\s+([\w\-–]+)\s*[—\-–:]\s*(.+?)(?:\n|$)'
+        r'Figure\s+(\d+(?:-\d+[a-z]?)?[a-z]?|[A-Z]-\d+[a-z]?)\s*[—:]\s*(.+?)(?:\n|$)'
     )
 
     for page_idx, page_figs in by_page.items():

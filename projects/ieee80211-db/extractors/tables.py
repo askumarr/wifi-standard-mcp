@@ -133,7 +133,12 @@ def _rows_to_json(headers: list[str], rows: list[list[str]]) -> list[dict]:
 
 def _find_table_caption(page_text: str, table_idx: int) -> tuple[str, str | None]:
     """Find table caption in the page text."""
-    pattern = re.compile(r'Table\s+([\w\-–]+)\s*[—\-–:\.]\s*(.+?)(?:\n|$)')
+    # Match table numbers like "Table 9-92", "Table 11-5", "Table C-1", "Table 10-32a"
+    # Number format: digits, optionally hyphen+digits+optional letter (e.g., 10-32a)
+    # or annex prefix (e.g., C-1). Separator from caption is em-dash (—) or colon.
+    pattern = re.compile(
+        r'Table\s+(\d+(?:-\d+[a-z]?)?[a-z]?|[A-Z]-\d+[a-z]?)\s*[—:]\s*(.+?)(?:\n|$)'
+    )
     matches = list(pattern.finditer(page_text))
 
     if table_idx < len(matches):

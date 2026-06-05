@@ -8,6 +8,7 @@ RESOURCES_DIR = REPO_ROOT / "resources"
 
 PDF_PATH = RESOURCES_DIR / "80211-2020.pdf"
 PDF_AX_PATH = RESOURCES_DIR / "80211ax-2021.pdf"
+PDF_BE_PATH = RESOURCES_DIR / "80211be-2024.pdf"
 
 OUTPUT_DIR = PROJECT_ROOT / "output"
 DB_PATH = OUTPUT_DIR / "ieee80211.db"
@@ -23,6 +24,7 @@ DEFAULT_STANDARD_VERSION = "802.11-2020"
 PDF_VERSION_MAP = {
     "80211-2020.pdf": "802.11-2020",
     "80211ax-2021.pdf": "802.11ax-2021",
+    "80211be-2024.pdf": "802.11be-2024",
 }
 
 # Section number regex pattern (matches patterns like "9.4.2.183")

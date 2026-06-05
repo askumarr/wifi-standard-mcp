@@ -176,8 +176,16 @@ def _cluster_drawing_regions(
         # Filter out full-width lines (likely borders/separators)
         if r.width > page_rect.width * 0.9 and r.height < 3:
             continue
-        if area < 100:  # tiny decorative elements
+        # Keep lines that are long enough (for sequence/flow diagrams)
+        # but filter truly tiny decorative marks
+        line_length = max(r.width, r.height)
+        if area < 100 and line_length < 30:
             continue
+        # Give zero-area lines a small rect for clustering purposes
+        if r.width == 0:
+            r = pymupdf.Rect(r.x0 - 1, r.y0, r.x1 + 1, r.y1)
+        if r.height == 0:
+            r = pymupdf.Rect(r.x0, r.y0 - 1, r.x1, r.y1 + 1)
         rects.append(r)
 
     if not rects:

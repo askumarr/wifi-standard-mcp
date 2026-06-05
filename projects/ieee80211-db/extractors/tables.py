@@ -17,6 +17,7 @@ class ExtractedTable:
     markdown: str
     structured_json: str
     page_number: int
+    standard_version: str = ""
 
 
 def extract_tables_from_doc(

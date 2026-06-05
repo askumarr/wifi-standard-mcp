@@ -15,6 +15,7 @@ class ExtractedFigure:
     image_path: str
     figure_type: str
     page_number: int
+    standard_version: str = ""
 
 
 # Minimum dimensions to filter out decorative elements (lines, borders)

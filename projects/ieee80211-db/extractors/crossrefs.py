@@ -10,6 +10,7 @@ class CrossReference:
     target_section: str
     target_type: str  # "section", "table", "figure", "annex"
     context: str
+    standard_version: str = ""
 
 
 # Patterns for different reference types

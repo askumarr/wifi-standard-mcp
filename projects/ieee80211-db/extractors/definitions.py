@@ -11,6 +11,7 @@ class Definition:
     term: str
     definition: str
     section_number: str
+    standard_version: str = ""
 
 
 def extract_definitions(

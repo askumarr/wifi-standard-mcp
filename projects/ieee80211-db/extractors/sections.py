@@ -15,6 +15,7 @@ class Section:
     level: int
     parent_section: str | None
     page_start: int
+    standard_version: str = ""
     page_end: int | None = None
     content_markdown: str = ""
 

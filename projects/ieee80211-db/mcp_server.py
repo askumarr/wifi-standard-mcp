@@ -412,29 +412,78 @@ def _search_standard(conn: sqlite3.Connection, query: str, max_results: int, ver
 
 def _get_table(conn: sqlite3.Connection, table_number: str, version: str | None = None) -> list[TextContent]:
     vf, vp = _version_filter(version)
-    row = conn.execute(
-        f"SELECT * FROM tables WHERE table_number = ?{vf}",
-        (table_number,) + vp
-    ).fetchone()
 
-    if not row:
+    # Find all rows matching this table number (handles multi-page tables)
+    rows = conn.execute(
+        f"SELECT * FROM tables WHERE table_number = ?{vf} ORDER BY page_number",
+        (table_number,) + vp
+    ).fetchall()
+
+    if not rows:
+        # Try fuzzy match
         rows = conn.execute(
-            f"SELECT * FROM tables WHERE table_number LIKE ?{vf}",
+            f"SELECT * FROM tables WHERE table_number LIKE ?{vf} ORDER BY page_number",
             (f"%{table_number}%",) + vp
         ).fetchall()
-        if rows:
-            row = rows[0]
-        else:
-            return [TextContent(type="text", text=f"Table '{table_number}' not found.")]
+
+    if not rows:
+        return [TextContent(type="text", text=f"Table '{table_number}' not found.")]
+
+    # Merge all pages of the same table
+    first = rows[0]
+    all_markdown_parts = []
+    all_structured = []
+
+    for row in rows:
+        md = row["markdown"]
+        if md:
+            lines = md.strip().split('\n')
+            # For continuation pages, skip the header + separator rows
+            # if they match the first page's headers
+            if row["page_number"] != first["page_number"] and len(lines) > 2:
+                # Check if first two lines are header/separator
+                if lines[1].strip().startswith('| ---'):
+                    lines = lines[2:]
+            all_markdown_parts.append('\n'.join(lines))
+
+        sj = row["structured_json"]
+        if sj:
+            try:
+                all_structured.extend(json.loads(sj))
+            except (json.JSONDecodeError, TypeError):
+                pass
+
+    # Rebuild merged markdown: use header from first page + all data rows
+    first_md = first["markdown"] or ""
+    first_lines = first_md.strip().split('\n')
+    header_lines = first_lines[:2] if len(first_lines) >= 2 else first_lines
+
+    data_lines = []
+    for row in rows:
+        md = row["markdown"]
+        if not md:
+            continue
+        lines = md.strip().split('\n')
+        # Skip header + separator
+        start_idx = 0
+        for i, line in enumerate(lines):
+            if line.strip().startswith('| ---'):
+                start_idx = i + 1
+                break
+        data_lines.extend(lines[start_idx:])
+
+    merged_markdown = '\n'.join(header_lines + data_lines)
 
     result = {
-        "standard_version": row["standard_version"],
-        "table_number": row["table_number"],
-        "caption": row["caption"],
-        "section_number": row["section_number"],
-        "page_number": row["page_number"],
-        "markdown": row["markdown"],
-        "structured_data": json.loads(row["structured_json"]) if row["structured_json"] else None,
+        "standard_version": first["standard_version"],
+        "table_number": first["table_number"],
+        "caption": first["caption"],
+        "section_number": first["section_number"],
+        "page_start": first["page_number"],
+        "page_end": rows[-1]["page_number"],
+        "pages_spanned": len(rows),
+        "markdown": merged_markdown,
+        "structured_data": all_structured if all_structured else None,
     }
     return [TextContent(type="text", text=json.dumps(result, indent=2))]
 

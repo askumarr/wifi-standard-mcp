@@ -1,3 +1,9 @@
-# Silicon Labs Community Terms of Use
+# Code of Conduct
 
-Please read the full Terms of Use and Code of Conduct in the [agreements-and-guidelines](https://github.com/SiliconLabsSoftware/agreements-and-guidelines) repository: [Code of Conduct](https://github.com/SiliconLabsSoftware/agreements-and-guidelines/blob/main/code_of_conduct.md)
+This is a private personal project. Access is restricted to authorized collaborators only.
+
+By accessing this repository, you agree to:
+
+1. **Respect intellectual property** — Do not redistribute any part of this project or the IEEE standards data contained within
+2. **Maintain confidentiality** — Do not share access credentials or repository contents with unauthorized parties
+3. **Use responsibly** — The extracted IEEE 802.11 data is for personal reference and development purposes only
